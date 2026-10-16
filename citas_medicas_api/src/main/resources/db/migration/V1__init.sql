@@ -1,3 +1,4 @@
+-- Active: 1788399080509@@localhost@5432@citas_medicas_db
 -- ============================================================
 -- FLYWAY MIGRATION V1: ESQUEMA INICIAL DE BASE DE DATOS
 -- Proyecto: API Gestión de Citas Médicas
