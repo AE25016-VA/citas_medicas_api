@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sv.ues.fmo.poo2.citas_medicas_api.dto.request.PacienteRequestDTO;
 import sv.ues.fmo.poo2.citas_medicas_api.dto.response.PacienteResponseDTO;
+import sv.ues.fmo.poo2.citas_medicas_api.exception.BadRequestException;
+import sv.ues.fmo.poo2.citas_medicas_api.exception.ResourceNotFoundException;
 import sv.ues.fmo.poo2.citas_medicas_api.model.Paciente;
 import sv.ues.fmo.poo2.citas_medicas_api.repository.PacienteRepository;
 import sv.ues.fmo.poo2.citas_medicas_api.service.PacienteService;
@@ -31,7 +33,7 @@ public class PacienteServiceImpl implements PacienteService {
     @Transactional(readOnly = true)
     public PacienteResponseDTO obtenerPorId(Long id) {
         Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con id: " + id));
         return mapToDTO(paciente);
     }
 
@@ -39,7 +41,7 @@ public class PacienteServiceImpl implements PacienteService {
     @Transactional
     public PacienteResponseDTO crearPaciente(PacienteRequestDTO requestDTO) {
         if (pacienteRepository.existsByCorreoPaciente(requestDTO.getCorreoPaciente())) {
-            throw new RuntimeException("El correo ya está registrado: " + requestDTO.getCorreoPaciente());
+            throw new BadRequestException("El correo ya está registrado: " + requestDTO.getCorreoPaciente());
         }
 
         Paciente paciente = Paciente.builder()
@@ -57,7 +59,7 @@ public class PacienteServiceImpl implements PacienteService {
     @Transactional
     public PacienteResponseDTO actualizarPaciente(Long id, PacienteRequestDTO requestDTO) {
         Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con id: " + id));
 
         paciente.setNombrePaciente(requestDTO.getNombrePaciente());
         paciente.setApellidoPaciente(requestDTO.getApellidoPaciente());
@@ -72,7 +74,7 @@ public class PacienteServiceImpl implements PacienteService {
     @Transactional
     public void eliminarPaciente(Long id) {
         if (!pacienteRepository.existsById(id)) {
-            throw new RuntimeException("Paciente no encontrado con id: " + id);
+            throw new ResourceNotFoundException("Paciente no encontrado con id: " + id);
         }
         pacienteRepository.deleteById(id);
     }
