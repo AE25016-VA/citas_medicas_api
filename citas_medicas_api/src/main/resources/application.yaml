@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/citas_medicas_db
     username: postgres
-    password: ${DB_PASSWORD:NuncaFuimos3}
+    password: ${DB_PASSWORD:260301}
     driver-class-name: org.postgresql.Driver
 
   jpa:

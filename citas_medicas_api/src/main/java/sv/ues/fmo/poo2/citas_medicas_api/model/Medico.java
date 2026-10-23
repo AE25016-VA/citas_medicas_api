@@ -29,5 +29,10 @@ public class Medico {
     @Column(name = "nombre_usuario", nullable = false, unique = true, length = 50)
     private String nombreUsuario;
 
+    @Column(name = "contraseña", nullable = false, length = 50)
+    private String contrasena;
+
+    @Column(name = "genero_medico", nullable = false, length = 20)
+    private String generoMedico;
     // Si en el V1__init.sql tenías contraseña o algún otro campo específico, agrégalo aquí.
 }
