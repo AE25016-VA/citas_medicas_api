@@ -8,4 +8,6 @@ public class MedicoRequestDto {
     private String apellidoMedico;
     private String correoMedico;
     private String nombreUsuario;
+    private String contrasena;
+    private String generoMedico;
 }

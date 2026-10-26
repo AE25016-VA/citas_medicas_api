@@ -23,14 +23,20 @@ public class MedicoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseEntity<MedicoResponseDto>> obtenerMedicoPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(ResponseEntity.ok(medicoService.obtenerMedicoPorId(id)));
+    public ResponseEntity<MedicoResponseDto> obtenerMedicoPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(medicoService.obtenerMedicoPorId(id));
     }
 
     @PostMapping
     public ResponseEntity<MedicoResponseDto> guardarMedico(@RequestBody MedicoRequestDto requestDto) {
         MedicoResponseDto nuevoMedico = medicoService.guardarMedico(requestDto);
         return new ResponseEntity<>(nuevoMedico, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<MedicoResponseDto> actualizarMedico(@PathVariable Long id, @RequestBody MedicoRequestDto requestDto) {
+        MedicoResponseDto medicoActualizado = medicoService.actualizarMedico(id, requestDto);
+        return ResponseEntity.ok(medicoActualizado);
     }
 
     @DeleteMapping("/{id}")
