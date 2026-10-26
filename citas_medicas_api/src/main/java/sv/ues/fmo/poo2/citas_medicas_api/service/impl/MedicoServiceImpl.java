@@ -36,6 +36,8 @@ public class MedicoServiceImpl implements MedicoService {
         medico.setApellidoMedico(requestDto.getApellidoMedico());
         medico.setCorreoMedico(requestDto.getCorreoMedico());
         medico.setNombreUsuario(requestDto.getNombreUsuario());
+        medico.setContrasena(requestDto.getContrasena());
+        medico.setGeneroMedico(requestDto.getGeneroMedico());
 
         Medico medicoGuardado = medicoRepository.save(medico);
         return mapearADto(medicoGuardado);
@@ -57,5 +59,21 @@ public class MedicoServiceImpl implements MedicoService {
         dto.setCorreoMedico(medico.getCorreoMedico());
         dto.setNombreUsuario(medico.getNombreUsuario());
         return dto;
+    }
+    
+    @Override
+    public MedicoResponseDto actualizarMedico(Long id, MedicoRequestDto requestDto) {
+        Medico medico = medicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Médico no encontrado con el ID: " + id));
+
+        medico.setNombreMedico(requestDto.getNombreMedico());
+        medico.setApellidoMedico(requestDto.getApellidoMedico());
+        medico.setCorreoMedico(requestDto.getCorreoMedico());
+        medico.setNombreUsuario(requestDto.getNombreUsuario());
+        medico.setContrasena(requestDto.getContrasena());
+        medico.setGeneroMedico(requestDto.getGeneroMedico());
+
+        Medico medicoActualizado = medicoRepository.save(medico);
+        return mapearADto(medicoActualizado);
     }
 }
