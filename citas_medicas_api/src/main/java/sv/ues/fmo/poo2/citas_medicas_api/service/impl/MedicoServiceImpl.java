@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sv.ues.fmo.poo2.citas_medicas_api.dto.request.MedicoRequestDto;
 import sv.ues.fmo.poo2.citas_medicas_api.dto.response.MedicoResponseDto;
+import sv.ues.fmo.poo2.citas_medicas_api.model.Especialidad;
 import sv.ues.fmo.poo2.citas_medicas_api.model.Medico;
+import sv.ues.fmo.poo2.citas_medicas_api.repository.EspecialidadRepository;
 import sv.ues.fmo.poo2.citas_medicas_api.repository.MedicoRepository;
 import sv.ues.fmo.poo2.citas_medicas_api.service.MedicoService;
 
@@ -16,6 +18,9 @@ public class MedicoServiceImpl implements MedicoService {
 
     @Autowired
     private MedicoRepository medicoRepository;
+
+    @Autowired
+    private EspecialidadRepository especialidadRepository; // 👈 Repositorio inyectado
 
     @Override
     public List<MedicoResponseDto> listarMedicos() {
@@ -31,6 +36,10 @@ public class MedicoServiceImpl implements MedicoService {
 
     @Override
     public MedicoResponseDto guardarMedico(MedicoRequestDto requestDto) {
+        // 1. Buscar la especialidad por ID
+        Especialidad especialidad = especialidadRepository.findById(requestDto.getIdEspecialidad())
+                .orElseThrow(() -> new RuntimeException("Especialidad no encontrada con el ID: " + requestDto.getIdEspecialidad()));
+
         Medico medico = new Medico();
         medico.setNombreMedico(requestDto.getNombreMedico());
         medico.setApellidoMedico(requestDto.getApellidoMedico());
@@ -38,9 +47,30 @@ public class MedicoServiceImpl implements MedicoService {
         medico.setNombreUsuario(requestDto.getNombreUsuario());
         medico.setContrasena(requestDto.getContrasena());
         medico.setGeneroMedico(requestDto.getGeneroMedico());
+        medico.setEspecialidad(especialidad); // 👈 Asignar la especialidad
 
         Medico medicoGuardado = medicoRepository.save(medico);
         return mapearADto(medicoGuardado);
+    }
+
+    @Override
+    public MedicoResponseDto actualizarMedico(Long id, MedicoRequestDto requestDto) {
+        Medico medico = medicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Médico no encontrado con el ID: " + id));
+
+        Especialidad especialidad = especialidadRepository.findById(requestDto.getIdEspecialidad())
+                .orElseThrow(() -> new RuntimeException("Especialidad no encontrada con el ID: " + requestDto.getIdEspecialidad()));
+
+        medico.setNombreMedico(requestDto.getNombreMedico());
+        medico.setApellidoMedico(requestDto.getApellidoMedico());
+        medico.setCorreoMedico(requestDto.getCorreoMedico());
+        medico.setNombreUsuario(requestDto.getNombreUsuario());
+        medico.setContrasena(requestDto.getContrasena());
+        medico.setGeneroMedico(requestDto.getGeneroMedico());
+        medico.setEspecialidad(especialidad); // 👈 Actualizar la especialidad
+
+        Medico medicoActualizado = medicoRepository.save(medico);
+        return mapearADto(medicoActualizado);
     }
 
     @Override
@@ -58,22 +88,11 @@ public class MedicoServiceImpl implements MedicoService {
         dto.setApellidoMedico(medico.getApellidoMedico());
         dto.setCorreoMedico(medico.getCorreoMedico());
         dto.setNombreUsuario(medico.getNombreUsuario());
+        
+        if (medico.getEspecialidad() != null) {
+            dto.setIdEspecialidad(medico.getEspecialidad().getIdEspecialidad());
+            dto.setNombreEspecialidad(medico.getEspecialidad().getNombreEspecialidad());
+        }
         return dto;
-    }
-    
-    @Override
-    public MedicoResponseDto actualizarMedico(Long id, MedicoRequestDto requestDto) {
-        Medico medico = medicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Médico no encontrado con el ID: " + id));
-
-        medico.setNombreMedico(requestDto.getNombreMedico());
-        medico.setApellidoMedico(requestDto.getApellidoMedico());
-        medico.setCorreoMedico(requestDto.getCorreoMedico());
-        medico.setNombreUsuario(requestDto.getNombreUsuario());
-        medico.setContrasena(requestDto.getContrasena());
-        medico.setGeneroMedico(requestDto.getGeneroMedico());
-
-        Medico medicoActualizado = medicoRepository.save(medico);
-        return mapearADto(medicoActualizado);
     }
 }

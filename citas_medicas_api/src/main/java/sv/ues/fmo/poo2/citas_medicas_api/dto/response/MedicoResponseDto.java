@@ -9,4 +9,6 @@ public class MedicoResponseDto {
     private String apellidoMedico;
     private String correoMedico;
     private String nombreUsuario;
+    private Long idEspecialidad;
+    private String nombreEspecialidad;
 }

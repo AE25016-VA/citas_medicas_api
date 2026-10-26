@@ -10,4 +10,5 @@ public class MedicoRequestDto {
     private String nombreUsuario;
     private String contrasena;
     private String generoMedico;
+    private Long idEspecialidad;
 }
