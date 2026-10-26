@@ -20,7 +20,7 @@ public class MedicoServiceImpl implements MedicoService {
     private MedicoRepository medicoRepository;
 
     @Autowired
-    private EspecialidadRepository especialidadRepository; // 👈 Repositorio inyectado
+    private EspecialidadRepository especialidadRepository; 
 
     @Override
     public List<MedicoResponseDto> listarMedicos() {
@@ -47,7 +47,7 @@ public class MedicoServiceImpl implements MedicoService {
         medico.setNombreUsuario(requestDto.getNombreUsuario());
         medico.setContrasena(requestDto.getContrasena());
         medico.setGeneroMedico(requestDto.getGeneroMedico());
-        medico.setEspecialidad(especialidad); // 👈 Asignar la especialidad
+        medico.setEspecialidad(especialidad); 
 
         Medico medicoGuardado = medicoRepository.save(medico);
         return mapearADto(medicoGuardado);
@@ -67,7 +67,7 @@ public class MedicoServiceImpl implements MedicoService {
         medico.setNombreUsuario(requestDto.getNombreUsuario());
         medico.setContrasena(requestDto.getContrasena());
         medico.setGeneroMedico(requestDto.getGeneroMedico());
-        medico.setEspecialidad(especialidad); // 👈 Actualizar la especialidad
+        medico.setEspecialidad(especialidad);
 
         Medico medicoActualizado = medicoRepository.save(medico);
         return mapearADto(medicoActualizado);
