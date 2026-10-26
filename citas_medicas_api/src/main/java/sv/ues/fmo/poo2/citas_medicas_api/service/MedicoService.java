@@ -9,5 +9,6 @@ public interface MedicoService {
     List<MedicoResponseDto> listarMedicos();
     MedicoResponseDto obtenerMedicoPorId(Long id);
     MedicoResponseDto guardarMedico(MedicoRequestDto requestDto);
+    MedicoResponseDto actualizarMedico(Long id, MedicoRequestDto requestDto);
     void eliminarMedico(Long id);
 }
