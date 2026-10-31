@@ -34,5 +34,4 @@ public class Medico {
 
     @Column(name = "genero_medico", nullable = false, length = 20)
     private String generoMedico;
-
 }
