@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "medico")
 @Data
@@ -34,4 +37,12 @@ public class Medico {
 
     @Column(name = "genero_medico", nullable = false, length = 20)
     private String generoMedico;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "especialidad_medico",
+        joinColumns = @JoinColumn(name = "medico_id"),
+        inverseJoinColumns = @JoinColumn(name = "especialidad_id")
+    )
+    private Set<Especialidad> especialidades = new HashSet<>();
 }

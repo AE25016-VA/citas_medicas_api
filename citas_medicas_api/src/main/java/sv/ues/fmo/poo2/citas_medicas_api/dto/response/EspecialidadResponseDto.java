@@ -1,3 +1,4 @@
+package sv.ues.fmo.poo2.citas_medicas_api.dto.response;
 
 import lombok.Data;
 
