@@ -2,7 +2,10 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/citas_medicas_db
     username: postgres
+
+    # RECORDATORIO: Cambiar esta contraseña por la de tu Docker local
     password: NuncaFuimos3
+
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -18,5 +21,3 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
-server:
-  port: 8081

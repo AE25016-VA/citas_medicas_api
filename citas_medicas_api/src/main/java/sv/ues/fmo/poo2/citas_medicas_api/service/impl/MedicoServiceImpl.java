@@ -1,8 +1,17 @@
 package sv.ues.fmo.poo2.citas_medicas_api.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
 import sv.ues.fmo.poo2.citas_medicas_api.dto.request.MedicoRequestDto;
+import sv.ues.fmo.poo2.citas_medicas_api.dto.response.EspecialidadResponseDto;
 import sv.ues.fmo.poo2.citas_medicas_api.dto.response.MedicoResponseDto;
 import sv.ues.fmo.poo2.citas_medicas_api.model.Especialidad;
 import sv.ues.fmo.poo2.citas_medicas_api.model.Medico;
@@ -10,24 +19,23 @@ import sv.ues.fmo.poo2.citas_medicas_api.repository.EspecialidadRepository;
 import sv.ues.fmo.poo2.citas_medicas_api.repository.MedicoRepository;
 import sv.ues.fmo.poo2.citas_medicas_api.service.MedicoService;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
+@RequiredArgsConstructor // Usamos inyección por constructor 
 public class MedicoServiceImpl implements MedicoService {
 
-    @Autowired
-    private MedicoRepository medicoRepository;
-
-    @Autowired
-    private EspecialidadRepository especialidadRepository; 
+    private final MedicoRepository medicoRepository;
+    private final EspecialidadRepository especialidadRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<MedicoResponseDto> listarMedicos() {
-        return medicoRepository.findAll().stream().map(this::mapearADto).collect(Collectors.toList());
+        return medicoRepository.findAll().stream()
+                .map(this::mapearADto)
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MedicoResponseDto obtenerMedicoPorId(Long id) {
         Medico medico = medicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Médico no encontrado con el ID: " + id));
@@ -35,11 +43,8 @@ public class MedicoServiceImpl implements MedicoService {
     }
 
     @Override
+    @Transactional
     public MedicoResponseDto guardarMedico(MedicoRequestDto requestDto) {
-        // 1. Buscar la especialidad por ID
-        Especialidad especialidad = especialidadRepository.findById(requestDto.getIdEspecialidad())
-                .orElseThrow(() -> new RuntimeException("Especialidad no encontrada con el ID: " + requestDto.getIdEspecialidad()));
-
         Medico medico = new Medico();
         medico.setNombreMedico(requestDto.getNombreMedico());
         medico.setApellidoMedico(requestDto.getApellidoMedico());
@@ -47,33 +52,62 @@ public class MedicoServiceImpl implements MedicoService {
         medico.setNombreUsuario(requestDto.getNombreUsuario());
         medico.setContrasena(requestDto.getContrasena());
         medico.setGeneroMedico(requestDto.getGeneroMedico());
-        medico.setEspecialidad(especialidad); 
+
+        if (requestDto.getEspecialidadesIds() != null && !requestDto.getEspecialidadesIds().isEmpty()) {
+            Set<Especialidad> especialidades = new HashSet<>(
+                especialidadRepository.findAllById(requestDto.getEspecialidadesIds())
+            );
+            medico.setEspecialidades(especialidades);
+        }
 
         Medico medicoGuardado = medicoRepository.save(medico);
         return mapearADto(medicoGuardado);
     }
 
-    @Override
-    public MedicoResponseDto actualizarMedico(Long id, MedicoRequestDto requestDto) {
-        Medico medico = medicoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Médico no encontrado con el ID: " + id));
+   @Override
+@Transactional
+public MedicoResponseDto actualizarMedico(Long id, MedicoRequestDto requestDto) {
+    Medico medico = medicoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Médico no encontrado con el ID: " + id));
 
-        Especialidad especialidad = especialidadRepository.findById(requestDto.getIdEspecialidad())
-                .orElseThrow(() -> new RuntimeException("Especialidad no encontrada con el ID: " + requestDto.getIdEspecialidad()));
+    // Validar correo único (ignorando si le pertenece al mismo médico)
+    medicoRepository.findByCorreoMedico(requestDto.getCorreoMedico()).ifPresent(m -> {
+        if (!m.getIdMedico().equals(id)) {
+            throw new RuntimeException("El correo ya pertenece a otro médico.");
+        }
+    });
 
-        medico.setNombreMedico(requestDto.getNombreMedico());
-        medico.setApellidoMedico(requestDto.getApellidoMedico());
-        medico.setCorreoMedico(requestDto.getCorreoMedico());
-        medico.setNombreUsuario(requestDto.getNombreUsuario());
-        medico.setContrasena(requestDto.getContrasena());
-        medico.setGeneroMedico(requestDto.getGeneroMedico());
-        medico.setEspecialidad(especialidad);
+    // Validar usuario único (ignorando si le pertenece al mismo médico)
+    medicoRepository.findByNombreUsuario(requestDto.getNombreUsuario()).ifPresent(m -> {
+        if (!m.getIdMedico().equals(id)) {
+            throw new RuntimeException("El nombre de usuario ya pertenece a otro médico.");
+        }
+    });
 
-        Medico medicoActualizado = medicoRepository.save(medico);
-        return mapearADto(medicoActualizado);
+    medico.setNombreMedico(requestDto.getNombreMedico());
+    medico.setApellidoMedico(requestDto.getApellidoMedico());
+    medico.setCorreoMedico(requestDto.getCorreoMedico());
+    medico.setNombreUsuario(requestDto.getNombreUsuario());
+    medico.setContrasena(requestDto.getContrasena());
+    medico.setGeneroMedico(requestDto.getGeneroMedico());
+
+    if (requestDto.getEspecialidadesIds() != null) {
+        List<Especialidad> especialidadesEncontradas = 
+                especialidadRepository.findAllById(requestDto.getEspecialidadesIds());
+
+        if (medico.getEspecialidades() == null) {
+            medico.setEspecialidades(new HashSet<>());
+        }
+
+        medico.getEspecialidades().clear();
+        medico.getEspecialidades().addAll(especialidadesEncontradas);
     }
 
+    Medico medicoActualizado = medicoRepository.save(medico);
+    return mapearADto(medicoActualizado);
+}
     @Override
+    @Transactional
     public void eliminarMedico(Long id) {
         if (!medicoRepository.existsById(id)) {
             throw new RuntimeException("No se puede eliminar, médico no encontrado con ID: " + id);
@@ -88,11 +122,24 @@ public class MedicoServiceImpl implements MedicoService {
         dto.setApellidoMedico(medico.getApellidoMedico());
         dto.setCorreoMedico(medico.getCorreoMedico());
         dto.setNombreUsuario(medico.getNombreUsuario());
-        
-        if (medico.getEspecialidad() != null) {
-            dto.setIdEspecialidad(medico.getEspecialidad().getIdEspecialidad());
-            dto.setNombreEspecialidad(medico.getEspecialidad().getNombreEspecialidad());
+        dto.setGeneroMedico(medico.getGeneroMedico());
+
+        if (medico.getEspecialidades() != null && !medico.getEspecialidades().isEmpty()) {
+            List<EspecialidadResponseDto> especialidadesDto = medico.getEspecialidades().stream()
+                    .map(esp -> {
+                        EspecialidadResponseDto espDto = new EspecialidadResponseDto();
+                        espDto.setIdEspecialidad(esp.getIdEspecialidad());
+                        espDto.setNombreEspecialidad(esp.getNombreEspecialidad());
+                        espDto.setDescripcionEspecialidad(esp.getDescripcionEspecialidad());
+                        return espDto;
+                    })
+                    .collect(Collectors.toList());
+
+            dto.setEspecialidades(especialidadesDto);
+        } else {
+            dto.setEspecialidades(new ArrayList<>());
         }
+
         return dto;
     }
 }

@@ -1,10 +1,3 @@
--- Active: 1788399080509@@localhost@5432@citas_medicas_db
--- ============================================================
--- FLYWAY MIGRATION V1: ESQUEMA INICIAL DE BASE DE DATOS
--- Proyecto: API Gestión de Citas Médicas
--- Motor: PostgreSQL
--- ============================================================
-
 -- 1. Tabla Paciente
 CREATE TABLE paciente (
     id_paciente BIGSERIAL PRIMARY KEY,
@@ -29,7 +22,7 @@ CREATE TABLE medico (
 -- 3. Tabla Especialidad
 CREATE TABLE especialidad (
     id_especialidad BIGSERIAL PRIMARY KEY,
-    nombre_especialidad VARCHAR(100) NOT NULL,
+    nombre_especialidad VARCHAR(100) UNIQUE NOT NULL,
     descripcion_especialidad TEXT
 );
 
