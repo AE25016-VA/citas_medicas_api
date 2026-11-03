@@ -2,13 +2,22 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/citas_medicas_db
     username: postgres
-    password: #contraseña
+    # RECORDATORIO: Cambiar esta contraseña por la de tu Docker local
+    password: haabge12345
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8081
