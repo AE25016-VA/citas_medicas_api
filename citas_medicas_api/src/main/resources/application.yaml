@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/citas_medicas_db
     username: postgres
-    password: haabge12345
+    password: ${DB_PASSWORD:betito2004}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -18,5 +18,6 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
-server:
-  port: 8081
+jackson:
+    serialization:
+      indent-output: true

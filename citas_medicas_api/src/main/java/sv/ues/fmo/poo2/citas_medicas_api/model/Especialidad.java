@@ -1,53 +1,27 @@
 package sv.ues.fmo.poo2.citas_medicas_api.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "especialidad") // Nombre de la tabla en PostgreSQL
+@Table(name = "especialidad")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Especialidad {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Autoincrementable 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_especialidad")
-    private Long idEspecialidad; // Long
+    private Long idEspecialidad;
 
-    @Column(name = "nombre_especialidad", length = 100) // VARCHAR(100)
-    private String nombreEspecialidad;
+   @Column(name = "nombre_especialidad", nullable = false, unique = true, length = 100)
+private String nombreEspecialidad;
 
-    @Column(name = "descripcion_especialidad", columnDefinition = "TEXT") // TEXT
+    @Column(name = "descripcion_especialidad", columnDefinition = "TEXT")
     private String descripcionEspecialidad;
 
-    // Constructor vacío Obligatorio para Spring
-    public Especialidad() {
-    }
-
-    // Getters y Setters 
-    public Long getIdEspecialidad() {
-        return idEspecialidad;
-    }
-
-    public void setIdEspecialidad(Long idEspecialidad) {
-        this.idEspecialidad = idEspecialidad;
-    }
-
-    public String getNombreEspecialidad() {
-        return nombreEspecialidad;
-    }
-
-    public void setNombreEspecialidad(String nombreEspecialidad) {
-        this.nombreEspecialidad = nombreEspecialidad;
-    }
-
-    public String getDescripcionEspecialidad() {
-        return descripcionEspecialidad;
-    }
-
-    public void setDescripcionEspecialidad(String descripcionEspecialidad) {
-        this.descripcionEspecialidad = descripcionEspecialidad;
-    }
+   
 }
