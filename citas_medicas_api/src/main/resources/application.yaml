@@ -2,10 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/citas_medicas_db
     username: postgres
-=======
-    # RECORDATORIO: Cambiar esta contraseña por la de tu Docker local
-    password: haabge12345
->>>>>>> 380d6fb772fc694e81c812740d73ca541d2acf1a
+    password: ${DB_PASSWORD:betito2004}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,3 +18,6 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+jackson:
+    serialization:
+      indent-output: true
