@@ -1,23 +1,15 @@
 package sv.ues.fmo.poo2.citas_medicas_api.service;
 
-import sv.ues.fmo.poo2.citas_medicas_api.dto.request.HorarioMedicoRequestDTO;
-import sv.ues.fmo.poo2.citas_medicas_api.dto.response.HorarioMedicoResponseDTO;
+import sv.ues.fmo.poo2.citas_medicas_api.dto.request.HorarioMedicoRequestDto;
+import sv.ues.fmo.poo2.citas_medicas_api.dto.response.HorarioMedicoResponseDto;
 
 import java.util.List;
 
 public interface HorarioMedicoService {
-
-    List<HorarioMedicoResponseDTO> listarHorarios();
-
-    HorarioMedicoResponseDTO obtenerHorarioPorId(Long id);
-
-    List<HorarioMedicoResponseDTO> listarHorariosPorMedico(Long idMedico);
-
-    HorarioMedicoResponseDTO guardarHorario(
-            HorarioMedicoRequestDTO requestDTO);
-
-    HorarioMedicoResponseDTO actualizarHorario(
-            Long id, HorarioMedicoRequestDTO requestDTO);
-
+    List<HorarioMedicoResponseDto> listarHorarios();
+    List<HorarioMedicoResponseDto> obtenerHorariosPorMedico(Long medicoId);
+    HorarioMedicoResponseDto obtenerHorarioPorId(Long id);
+    HorarioMedicoResponseDto guardarHorario(HorarioMedicoRequestDto requestDto);
+    HorarioMedicoResponseDto actualizarHorario(Long id, HorarioMedicoRequestDto requestDto);
     void eliminarHorario(Long id);
 }
