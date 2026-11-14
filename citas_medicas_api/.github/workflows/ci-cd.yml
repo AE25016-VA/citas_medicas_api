@@ -1,0 +1,41 @@
+name: CI/CD Citas Medicas API
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 3. Compilar y ejecutar pruebas unitarias
+        run: chmod +x mvnw && ./mvnw clean test package -DskipTests=false -Dspring.flyway.enabled=false
+
+      - name: 4. Construir imagen Docker local
+        run: docker build -t citas-medicas-api:1.0 .
+
+      - name: 5. Desplegar en Kubernetes local (Docker Desktop)
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl && mv kubectl /usr/local/bin/
+          mkdir -p ~/.kube
+          sed 's/127.0.0.1/host.docker.internal/g; s/localhost/host.docker.internal/g' .kube-local/config > ~/.kube/config
+          kubectl config set-cluster kind-desktop --insecure-skip-tls-verify=true || true
+          kubectl config view --minify -o jsonpath='{.clusters[0].name}' | xargs -I {} kubectl config set-cluster {} --insecure-skip-tls-verify=true
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl rollout restart deployment/citas-medicas-api
+          kubectl get pods
