@@ -1,0 +1,6 @@
+target/
+.mvn/
+.vscode/
+.git/
+*.md
+.gitignore

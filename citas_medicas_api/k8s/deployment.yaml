@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: citas-medicas-api
+  labels:
+    app: citas-medicas-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: citas-medicas-api
+  template:
+    metadata:
+      labels:
+        app: citas-medicas-api
+    spec:
+      containers:
+        - name: citas-medicas-api
+          image: citas-medicas-api:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+          # IMPORTANTE: Ajusta estos valores según tu instancia local de PostgreSQL antes de aplicar con kubectl
+          - name: SPRING_DATASOURCE_URL
+            value: "jdbc:postgresql://host.docker.internal:5432/citas_medicas_db"
+          - name: SPRING_DATASOURCE_USERNAME
+            value: "postgres"
+          - name: DB_PASSWORD
+            value: "*****" # <-- Reemplazar por la contraseña de tu PostgreSQL local (ej. betito2004)
+          - name: SPRING_FLYWAY_ENABLED
+            value: "false"
+          - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+            value: "update"
