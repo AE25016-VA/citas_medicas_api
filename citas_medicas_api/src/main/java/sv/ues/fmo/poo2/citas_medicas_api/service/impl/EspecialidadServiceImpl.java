@@ -1,7 +1,8 @@
 package sv.ues.fmo.poo2.citas_medicas_api.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import sv.ues.fmo.poo2.citas_medicas_api.dto.request.EspecialidadRequestDto;
 import sv.ues.fmo.poo2.citas_medicas_api.dto.response.EspecialidadResponseDto;
 import sv.ues.fmo.poo2.citas_medicas_api.model.Especialidad;
@@ -12,10 +13,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor 
 public class EspecialidadServiceImpl implements EspecialidadService {
 
-    @Autowired
-    private EspecialidadRepository especialidadRepository;
+    
+    private final EspecialidadRepository especialidadRepository;
 
     @Override
     public List<EspecialidadResponseDto> listarEspecialidades() {

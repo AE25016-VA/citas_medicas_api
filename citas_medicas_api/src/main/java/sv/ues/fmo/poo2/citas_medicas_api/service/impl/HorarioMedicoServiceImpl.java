@@ -1,134 +1,104 @@
 package sv.ues.fmo.poo2.citas_medicas_api.service.impl;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sv.ues.fmo.poo2.citas_medicas_api.dto.request.HorarioMedicoRequestDTO;
-import sv.ues.fmo.poo2.citas_medicas_api.dto.response.HorarioMedicoResponseDTO;
-import sv.ues.fmo.poo2.citas_medicas_api.exception.BadRequestException;
-import sv.ues.fmo.poo2.citas_medicas_api.exception.ResourceNotFoundException;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+
+import sv.ues.fmo.poo2.citas_medicas_api.dto.request.HorarioMedicoRequestDto;
+import sv.ues.fmo.poo2.citas_medicas_api.dto.response.HorarioMedicoResponseDto;
 import sv.ues.fmo.poo2.citas_medicas_api.model.HorarioMedico;
 import sv.ues.fmo.poo2.citas_medicas_api.model.Medico;
 import sv.ues.fmo.poo2.citas_medicas_api.repository.HorarioMedicoRepository;
 import sv.ues.fmo.poo2.citas_medicas_api.repository.MedicoRepository;
 import sv.ues.fmo.poo2.citas_medicas_api.service.HorarioMedicoService;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class HorarioMedicoServiceImpl implements HorarioMedicoService {
 
-    private final HorarioMedicoRepository horarioRepository;
+    private final HorarioMedicoRepository horarioMedicoRepository;
     private final MedicoRepository medicoRepository;
 
     @Override
-    public List<HorarioMedicoResponseDTO> listarHorarios() {
-        return horarioRepository.findAll()
-                .stream()
-                .map(this::convertirRespuesta)
-                .toList();
+    @Transactional(readOnly = true)
+    public List<HorarioMedicoResponseDto> listarHorarios() {
+        return horarioMedicoRepository.findAll().stream()
+                .map(this::mapearADto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public HorarioMedicoResponseDTO obtenerHorarioPorId(Long id) {
-        return convertirRespuesta(buscarHorario(id));
+    @Transactional(readOnly = true)
+    public List<HorarioMedicoResponseDto> obtenerHorariosPorMedico(Long medicoId) {
+        return horarioMedicoRepository.findByMedicoIdMedico(medicoId).stream()
+                .map(this::mapearADto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<HorarioMedicoResponseDTO> listarHorariosPorMedico(
-            Long idMedico) {
-
-        buscarMedico(idMedico);
-
-        return horarioRepository.findByMedico_IdMedico(idMedico)
-                .stream()
-                .map(this::convertirRespuesta)
-                .toList();
-    }
-
-    @Override
-    @Transactional
-    public HorarioMedicoResponseDTO guardarHorario(
-            HorarioMedicoRequestDTO requestDTO) {
-
-        validarHoras(requestDTO);
-        Medico medico = buscarMedico(requestDTO.getIdMedico());
-
-        HorarioMedico horario = new HorarioMedico();
-        asignarDatos(horario, requestDTO, medico);
-
-        return convertirRespuesta(horarioRepository.save(horario));
+    @Transactional(readOnly = true)
+    public HorarioMedicoResponseDto obtenerHorarioPorId(Long id) {
+        HorarioMedico horario = horarioMedicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Horario no encontrado con ID: " + id));
+        return mapearADto(horario);
     }
 
     @Override
     @Transactional
-    public HorarioMedicoResponseDTO actualizarHorario(
-            Long id, HorarioMedicoRequestDTO requestDTO) {
+    public HorarioMedicoResponseDto guardarHorario(HorarioMedicoRequestDto requestDto) {
+        Medico medico = medicoRepository.findById(requestDto.getMedicoId())
+                .orElseThrow(() -> new RuntimeException("Médico no encontrado con ID: " + requestDto.getMedicoId()));
 
-        HorarioMedico horario = buscarHorario(id);
-        validarHoras(requestDTO);
-        Medico medico = buscarMedico(requestDTO.getIdMedico());
+        HorarioMedico horario = HorarioMedico.builder()
+                .medico(medico)
+                .diasTurno(requestDto.getDiasTurno())
+                .horaInicio(requestDto.getHoraInicio())
+                .horaFin(requestDto.getHoraFin())
+                .duracionConsultaMinutos(requestDto.getDuracionConsultaMinutos())
+                .build();
 
-        asignarDatos(horario, requestDTO, medico);
+        return mapearADto(horarioMedicoRepository.save(horario));
+    }
 
-        return convertirRespuesta(horarioRepository.save(horario));
+    @Override
+    @Transactional
+    public HorarioMedicoResponseDto actualizarHorario(Long id, HorarioMedicoRequestDto requestDto) {
+        HorarioMedico horario = horarioMedicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Horario no encontrado con ID: " + id));
+
+        Medico medico = medicoRepository.findById(requestDto.getMedicoId())
+                .orElseThrow(() -> new RuntimeException("Médico no encontrado con ID: " + requestDto.getMedicoId()));
+
+        horario.setMedico(medico);
+        horario.setDiasTurno(requestDto.getDiasTurno());
+        horario.setHoraInicio(requestDto.getHoraInicio());
+        horario.setHoraFin(requestDto.getHoraFin());
+        horario.setDuracionConsultaMinutos(requestDto.getDuracionConsultaMinutos());
+
+        return mapearADto(horarioMedicoRepository.save(horario));
     }
 
     @Override
     @Transactional
     public void eliminarHorario(Long id) {
-        HorarioMedico horario = buscarHorario(id);
-        horarioRepository.delete(horario);
-    }
-
-    private HorarioMedico buscarHorario(Long id) {
-        return horarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Horario no encontrado con ID: " + id));
-    }
-
-    private Medico buscarMedico(Long idMedico) {
-        return medicoRepository.findById(idMedico)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Médico no encontrado con ID: " + idMedico));
-    }
-
-    private void validarHoras(HorarioMedicoRequestDTO requestDTO) {
-        if (requestDTO.getHoraInicio() == null
-                || requestDTO.getHoraFin() == null) {
-            throw new BadRequestException(
-                    "La hora de inicio y la hora de fin son obligatorias.");
+        if (!horarioMedicoRepository.existsById(id)) {
+            throw new RuntimeException("Horario no encontrado con ID: " + id);
         }
-
-        if (!requestDTO.getHoraFin().isAfter(requestDTO.getHoraInicio())) {
-            throw new BadRequestException(
-                    "La hora de fin debe ser posterior a la hora de inicio.");
-        }
+        horarioMedicoRepository.deleteById(id);
     }
 
-    private void asignarDatos(
-            HorarioMedico horario,
-            HorarioMedicoRequestDTO requestDTO,
-            Medico medico) {
-
-        horario.setMedico(medico);
-        horario.setDiasTurno(requestDTO.getDiasTurno());
-        horario.setHoraInicio(requestDTO.getHoraInicio());
-        horario.setHoraFin(requestDTO.getHoraFin());
-    }
-
-    private HorarioMedicoResponseDTO convertirRespuesta(
-            HorarioMedico horario) {
-
-        HorarioMedicoResponseDTO respuesta = new HorarioMedicoResponseDTO();
-        respuesta.setIdHorario(horario.getIdHorario());
-        respuesta.setIdMedico(horario.getMedico().getIdMedico());
-        respuesta.setDiasTurno(horario.getDiasTurno());
-        respuesta.setHoraInicio(horario.getHoraInicio());
-        respuesta.setHoraFin(horario.getHoraFin());
-
-        return respuesta;
+    private HorarioMedicoResponseDto mapearADto(HorarioMedico horario) {
+        HorarioMedicoResponseDto dto = new HorarioMedicoResponseDto();
+        dto.setIdHorario(horario.getIdHorario());
+        dto.setMedicoId(horario.getMedico().getIdMedico());
+        dto.setNombreCompletoMedico(horario.getMedico().getNombreMedico() + " " + horario.getMedico().getApellidoMedico());
+        dto.setDiasTurno(horario.getDiasTurno());
+        dto.setHoraInicio(horario.getHoraInicio());
+        dto.setHoraFin(horario.getHoraFin());
+        dto.setDuracionConsultaMinutos(horario.getDuracionConsultaMinutos());
+        return dto;
     }
 }

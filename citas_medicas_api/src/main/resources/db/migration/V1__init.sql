@@ -44,7 +44,8 @@ CREATE TABLE horario_medico (
     dias_turno VARCHAR(50) NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fin TIME NOT NULL,
-    CONSTRAINT fk_horario_medico FOREIGN KEY (medico_id) 
+    duracion_consulta_minutos INT NOT NULL DEFAULT 30,
+    CONSTRAINT fk_horario_medico FOREIGN KEY (medico_id)
         REFERENCES medico(id_medico) ON DELETE CASCADE
 );
 
@@ -56,13 +57,14 @@ CREATE TABLE cita (
     especialidad_id BIGINT NOT NULL,
     fecha_cita DATE NOT NULL,
     hora_cita TIME NOT NULL,
-    estado_cita VARCHAR(50) NOT NULL DEFAULT 'PENDIENTE',
-    motivo_cita TEXT,
+    hora_fin_cita TIME NOT NULL,
+    estado_cita VARCHAR(50) NOT NULL DEFAULT 'CONFIRMADA',
+    motivo_consulta VARCHAR(255) NOT NULL,
     fecha_asistencia TIMESTAMP,
-    CONSTRAINT fk_cita_paciente FOREIGN KEY (paciente_id) 
+    CONSTRAINT fk_cita_paciente FOREIGN KEY (paciente_id)
         REFERENCES paciente(id_paciente),
-    CONSTRAINT fk_cita_medico FOREIGN KEY (medico_id) 
+    CONSTRAINT fk_cita_medico FOREIGN KEY (medico_id)
         REFERENCES medico(id_medico),
-    CONSTRAINT fk_cita_especialidad FOREIGN KEY (especialidad_id) 
+    CONSTRAINT fk_cita_especialidad FOREIGN KEY (especialidad_id)
         REFERENCES especialidad(id_especialidad)
 );
