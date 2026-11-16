@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://host.docker.internal:5432/citas_medicas_db
+    url: jdbc:postgresql://localhost:5432/citas_medicas_db
     username: postgres
-    password: "*****"
+    password: NuncaFuimos3
   flyway:
     enabled: false
   jpa:
