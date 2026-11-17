@@ -24,18 +24,21 @@ jobs:
       - name: 3. Compilar y ejecutar pruebas unitarias
         run: chmod +x mvnw && ./mvnw clean test package -DskipTests=false -Dspring.flyway.enabled=false
 
-      - name: 4. Construir imagen Docker local
-        run: docker build -t citas-medicas-api:1.0 .
+      - name: 4. Construir imagen Docker local y cargar en kind
+        run: |
+          docker build -t citas-medicas-api:1.0 .
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          chmod +x ./kind && mv ./kind /usr/local/bin/kind
+          kind load docker-image citas-medicas-api:1.0 --name desktop
 
-      - name: 5. Desplegar en Kubernetes local (Docker Desktop)
+      - name: 5. Desplegar en Kubernetes local (kind)
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl && mv kubectl /usr/local/bin/
           mkdir -p ~/.kube
-          sed 's/127.0.0.1/host.docker.internal/g; s/localhost/host.docker.internal/g' .kube-local/config > ~/.kube/config
-          kubectl config set-cluster kind-desktop --insecure-skip-tls-verify=true || true
-          kubectl config view --minify -o jsonpath='{.clusters[0].name}' | xargs -I {} kubectl config set-cluster {} --insecure-skip-tls-verify=true
+          kind get kubeconfig --name desktop --internal > ~/.kube/config
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
           kubectl rollout restart deployment/citas-medicas-api
+          kubectl rollout status deployment/citas-medicas-api --timeout=90s
           kubectl get pods
