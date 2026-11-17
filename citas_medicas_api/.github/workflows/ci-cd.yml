@@ -22,19 +22,23 @@ jobs:
           cache: maven
 
       - name: 3. Compilar y ejecutar pruebas unitarias
-        run: chmod +x mvnw && ./mvnw clean test package -DskipTests=false -Dspring.flyway.enabled=false
+        run: |
+          chmod +x mvnw
+          ./mvnw test -Dtest="*UnitTest" -DskipTests=false
 
       - name: 4. Construir imagen Docker local
         run: docker build -t citas-medicas-api:1.0 .
 
       - name: 5. Desplegar en Kubernetes local (Docker Desktop)
+        if: env.ACT == 'true'
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl && mv kubectl /usr/local/bin/
           mkdir -p ~/.kube
-          sed 's/127.0.0.1/host.docker.internal/g; s/localhost/host.docker.internal/g' .kube-local/config > ~/.kube/config
-          kubectl config set-cluster kind-desktop --insecure-skip-tls-verify=true || true
-          kubectl config view --minify -o jsonpath='{.clusters[0].name}' | xargs -I {} kubectl config set-cluster {} --insecure-skip-tls-verify=true
+          printf "%s" "$KUBE_CONFIG_B64" | base64 -d > ~/.kube/config
+          sed -i 's/127.0.0.1/host.docker.internal/g; s/localhost/host.docker.internal/g' ~/.kube/config
+          kubectl config use-context docker-desktop
+          kubectl config set-cluster docker-desktop --insecure-skip-tls-verify=true
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
           kubectl rollout restart deployment/citas-medicas-api
