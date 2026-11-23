@@ -14,10 +14,10 @@ spec:
       labels:
         app: citas-medicas-api
     spec:
-     hostAliases:
-       - ip: "172.18.0.1"
-         hostnames:
-           - "host.docker.internal"
+      hostAliases:
+        - ip: "172.18.0.1"
+          hostnames:
+            - "host.docker.internal"
       containers:
         - name: citas-medicas-api
           image: citas-medicas-api:1.0
