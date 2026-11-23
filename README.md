@@ -1,47 +1,40 @@
-# API de Gestión de Citas Médicas
+# API REST - Sistema de Gestión de Citas Médicas
 
-Este repositorio contiene la documentación técnica y el diseño de la arquitectura de software para el desarrollo de una API REST de Gestión de Citas Médicas. El proyecto aborda la automatización, centralización y optimización del flujo transaccional de consultas médicas, coordinando horarios, especialidades y usuarios bajo una estructura de datos sólida y escalable.
-
----
-
-## Integrantes del Equipo
-
-| Nombre Completo | Carnet / Código |
-| :--- | :---: |
-| Cesia Mariena Alfaro Hernández | AH23007 |
-| Vanesa Gabriela Arevalo Elias | AE25016 |
-| Liliana Melissa Cruz Henriquez | CH20014 |
-| Gerson Antonio Chámul Ramírez | CR25082 |
-| Cristian Mauricio Molina Monzon | MM18192 |
+Proyecto desarrollado para la asignatura de Programación Orientada a Objetos (Ciclo II/2026 - Universidad de El Salvador, Facultad Multidisciplinaria de Occidente). Consiste en una API RESTful construida con Spring Boot para administrar el flujo de citas médicas, aplicando estándares de desarrollo en capas, contenerización con Docker, orquestación en Kubernetes y automatización de integración y despliegue continuo (CI/CD) mediante `act`.
 
 ---
 
-## Modelado e Ingeniería de Datos
+## Arquitectura y Tecnologías Utilizadas
 
-El proyecto documenta el ciclo completo de diseño de software mediante los siguientes artefactos:
-
-1. **Diagrama de Casos de Uso (UML):** Delimita el alcance funcional del sistema y la interacción de los tres actores principales (Paciente, Médico y Administrador).
-2. **Modelo Entidad-Relación (DER Conceptual):** Establece la estructura de información e identifica las reglas de negocio y cardinalidades del dominio (1:N y N:M).
-3. **Diagrama Relacional (Base de Datos):** Muestra la traducción física del modelo conceptual a PostgreSQL, definiendo claves primarias (PK), claves foráneas (FK) y la resolución de relaciones complejas mediante tablas intermedias.
-4. **Diagrama de Clases (UML):** Define la arquitectura orientada a objetos para el desarrollo backend, especificando atributos, visibilidad y métodos de negocio clave.
-
----
-
-## Entidades Principales
-
-* **`Paciente`:** Administra el perfil, contacto y credenciales de los usuarios solicitantes de citas.
-* **`Medico`:** Gestiona el perfil del personal de salud encargado de las consultas.
-* **`Especialidad` / `Especialidad_medico`:** Catálogo de áreas médicas y tabla asociativa para el soporte de múltiples especialidades por doctor.
-* **`HorarioMedico`:** Controla los días, turnos y rango de disponibilidad de los doctores mediante métodos como `consultarDisponibilidad()`.
-* **`Cita`:** Núcleo del sistema que vincula en una transacción única al paciente, médico y especialidad con su respectivo estado, fecha y hora.
+* **Lenguaje y Framework:** Java 17 / Spring Boot (Spring Web, Spring Data JPA, Spring Validation)[cite: 2]
+* **Base de Datos:** PostgreSQL
+* **Gestor de Dependencias:** Maven
+* **Patrones y Utilidades:** Arquitectura en capas (`Controller`, `Service`, `Repository`), patrón DTO, Lombok y manejo centralizado de excepciones (`GlobalExceptionHandler`)[cite: 2, 7, 9]
+* **Pruebas Unitarias:** JUnit 5 y Mockito[cite: 2]
+* **Contenerización y Orquestación:** Docker y Kubernetes (`Docker Desktop` / `kind`)
+* **Automatización CI/CD:** GitHub Actions ejecutado localmente con `act` y `KUBECONFIG`[cite: 2, 9]
 
 ---
 
-## Tecnologías Planificadas
+## Requisitos Previos
 
-* **Lenguaje y Gestor de Proyectos:** Java con Apache Maven
-* **Entorno de Desarrollo (IDE):** Visual Studio Code
-* **Pruebas de API:** Postman
-* **Motor de Base de Datos:** PostgreSQL
-* **Estándar de Arquitectura:** API RESTful / Orientación a Objetos (UML)
-* **Herramientas de Diseño:** Draw.io
+Para ejecutar este proyecto de forma local y reproducir el flujo completo de CI/CD y Kubernetes, es necesario contar con los siguientes componentes instalados y activos:
+
+1. **Java JDK 17** o superior y **Maven** (o uso del wrapper `./mvnw` incluido en el proyecto).
+2. **PostgreSQL** en ejecución en el puerto `5432`, con una base de datos creada llamada `citas_medicas_db`.
+3. **Docker** en ejecución (Docker Desktop en Windows/macOS, o Docker Engine en Linux).
+4. **Clúster local de Kubernetes activo:**
+   * En Windows/macOS: Habilitar Kubernetes desde *Docker Desktop > Settings > Kubernetes > Enable Kubernetes*[cite: 2].
+   * En Linux: Tener creado el clúster local mediante `kind` (por ejemplo: `kind create cluster --name desktop`).
+5. **`kubectl`** instalado y apuntando al clúster local (`kubectl get nodes` debe mostrar el nodo en estado `Ready`).
+6. **`act`** instalado para la ejecución local del pipeline de GitHub Actions[cite: 2, 9].
+
+---
+
+## Configuración Inicial
+
+### 1. Base de Datos Local
+Asegúrese de que el servicio de PostgreSQL esté activo y tenga creada la base de datos:
+
+```sql
+CREATE DATABASE citas_medicas_db;
